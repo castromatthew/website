@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Matthew Castro - Blog</title>
+    <link rel="icon" type="image/x-icon" href="../assets/favicon.ico" />
+    <!-- Font Awesome icons (free version)-->
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <!-- Google fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet"
+        type="text/css" />
+    <link
+        href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800"
+        rel="stylesheet" type="text/css" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="../css/styles.css" rel="stylesheet" />
+    <link rel="preload" as="image" href="/assets/img/backgroud.jpg">
+    <link rel="preload" as="image" href="/assets/img/posts.jpg">
+</head>
+
+<body>
+    <!-- Navigation-->
+    <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
+        <div class="container px-4 px-lg-5">
+            <a class="navbar-brand" href="../index.html">Matthew Castro</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                Menu
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ms-auto py-4 py-lg-0">
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../index.html">Homelab</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../reports.html">Reports</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../Write-ups.html">Write-ups</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../about.html">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Page Header-->
+    <header class="masthead" style="background-image: url('../assets/img/posts.jpg')">
+        <div class="container position-relative px-4 px-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+                <div class="col-md-10 col-lg-8 col-xl-7">
+                    <div class="post-heading">
+                        <h1>Installing and Configuring my Home Lab</h1>
+                        <h2 class="subheading">A detailed post on the entire installation and configuration of my home lab.</h2>
+                        <span class="meta">
+                            Posted on December 7th, 2025
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Post Content-->
+    <article class="mb-4">
+        <div class="container px-4 px-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+                <div class="col-md-10 col-lg-8 col-xl-7">
+
+                    <h2 id="table-of-contents">Table of Contents</h2>
+                    <ul>
+                        <li><a href="#introduction">Introduction</a></li>
+                        <li><a href="#installing-pfsense">Installing pfSense</a>
+                            <ul>
+                                <li><a href="#vm-setup-and-os-installation1">VM Setup and OS Installation</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#installing-dc01">Installing DC01</a>
+                            <ul>
+                                <li><a href="#vm-setup-and-os-installation2">VM Setup and OS Installation</a></li>
+                                <li><a href="#network-settings-configuration1">Network Settings Configuration</a></li>
+                                <li><a href="#domain-creation-and-dc-role-installation-">Domain Creation (and DC Role Installation)</a></li>
+                                <li><a href="#creating-domain-users">Creating Domain Users</a></li>
+                                <li><a href="#creating-gpos">Creating GPOs</a> </li>
+                                <li><a href="#mail-server-setup">Mail Server Setup</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#installing-pc03">Installing PC03</a><ul>
+                                <li><a href="#vm-setup-and-os-installation3">VM Setup and OS Installation</a></li>
+                                <li><a href="#global-network-settings-configuration">Global Network Settings
+                                        Configuration</a></li>
+                                <li><a href="#installing-ssh">Installing SSH</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#installing-pc01">Installing PC01</a><ul>
+                                <li><a href="#vm-setup-and-os-installation4">VM Setup and OS Installation</a></li>
+                                <li><a href="#network-settings-configuration2">Network Settings Configuration</a></li>
+                                <li><a href="#joining-the-domain1">Joining the Domain</a></li>
+                                <li><a href="#user-mailbox-configuration">User Mailbox Configuration</a></li>
+                                <li><a href="#winrm-configuration">WinRM configuration</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#installing-pc02">Installing PC02</a>
+                            <ul>
+                                <li><a href="#vm-setup-and-os-installation5">VM Setup and OS Installation</a></li>
+                                <li><a href="#network-settings-configuration3">Network Settings Configuration</a></li>
+                                <li><a href="#joining-the-domain2">Joining the Domain</a></li>
+                                <li><a href="#webserver-installation">Webserver Installation</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#conclusion">Conclusion</a></li>
+                    </ul>
+                    <p>
+                    </p>
+                    <h2 id="introduction">Introduction</h2>
+                    <p>In this document, I will go through all of the steps I took to configure my home lab. This
+                        document is intended to be
+                        a long form walkthrough of the entire lab configuration. 
+                    <br></br>
+                    My goals in making this home lab are:
+                    </p>
+                    <p></p>
+                        <b>A)</b> To document exploit chains within an Active Directory environment,
+                    <p></p>
+                        <b>B)</b> To conduct custom tests within my own lab instead of relying on community
+                        platforms,
+                    <p></p>
+                        <b>C)</b> To have a continued learning and testing opportunity.</p>
+                    <p>The lab will be comprised of a pfSense machine acting as the firewall and router, a Windows
+                        Server 2019 domain
+                        controller (DC01), a Windows 11 Pro host (PC01), a Windows Server 2019 host (PC02) and an Ubuntu
+                        LTS host (PC03).
+                    </p>
+                    <p>The IP range for the network will be 192.168.1.0/254</p>
+                    <p>These will be the IP addresses of each of the machines on the network:</p>
+                    <p>pfSense: 192.168.1.1</p>
+                    <p>DC01: 192.168.1.100</p>
+                    <p>PC01: 192.168.1.101</p>
+                    <p>PC02: 192.168.1.102</p>
+                    <p>PC03: 192.168.1.201</p>
+                    <p>We will be interacting with the lab's network from our Kali Linux machine, either from within our internal
+                        network (to simulate
+                        a partial breach) or from outside of internal network.</p>
+                    <p>Here is a simplified representation of the two scenarios:</p>
+                    <p></p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/internal1.png" alt="..." />
+                    <p></p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/external1.png" alt="..." />
+                    <p>The pfSense machine will be configured with two network adapters, one for NAT and the other for
+                        the internal network.
+                        We will then port-forward a service (e.g. webserver) from the internal network to the NAT. This
+                        will simulate internal
+                        access obtained from an externally facing service.</p>
+                    <p>This should give us all we need to test against a relatively realistic but simple corporate AD
+                        environment. We also
+                        have the ability to add machines as we see fit in the future. This is the first time I have created a
+                        simulated network
+                        from scratch, so I expect to be adding machines and modifying configurations as I go on. We will
+                        now begin
+                        configuring the lab.</p>
+                    <h2 id="installing-pfsense">Installing pfSense</h2>
+                    <p>Our first step will be installing pfSense, an open source firewall and router platform based in
+                        FreeBSD. This is
+                        where we will configure the IP range and DNS settings (Routing). </p>
+                    <h4 id="vm-setup-and-os-installation1">VM Setup and OS Installation</h4>
+                    <p>We start by downloading the pfSense ISO from the official website and creating a new virtual
+                        machine in VirtualBox.
+                        We select the ISO from our local disk and set the OS to FreeBSD.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/pf/1.png" alt="..." />
+                    <p>
+                        We can then specify the virtual hardware to the recommended hardware requirements. We set the
+                        base memory to 2GB,
+                        the number of CPUs to 2 and 20GB for the disk size. This can always be adjusted at a later date.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/pf/2.png" alt="..." />
+                    <p>We then head to our VM’s settings, select expert and head to the network tab. We configure two
+                        virtual network
+                        adapters: &quot;NAT&quot; which will allow the machine to route packets to the internet and
+                        &quot;Internal
+                        Network&quot; which will be our virtual private network. All other machines will have
+                        &quot;Internal Network&quot;
+                        as their only network adapter. This way, all traffic must pass through pfSense before reaching
+                        the internet. This
+                        will also be useful when it comes to simulating external breaches.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/pf/3.png" alt="..." />
+                    <p></p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/pf/4.png" alt="..." />
+                    <p>We can now boot the machine to begin the setup. </p>
+                    <p>When asked to configure the network, we select em0 as the WAN interface. This is the interface
+                        that will connect to
+                        the internet.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/pf/5.png" alt="..." />
+                    <p>
+                        We can leave the WAN network mode with its default settings.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/pf/6.png" alt="..." />
+                    <p>
+                        We can then select em1 as our LAN interface. This will be the internal network interface.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/pf/7.png" alt="..." />
+                    <p>
+                        We can also leave the LAN network mode settings at their default values. </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/pf/8.png" alt="..." />
+                    <p>
+                        After confirming some basic settings, the installation begins.</p>
+                    <p>Once the installation is finished, we are asked to reboot. </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/pf/9.png" alt="..." />
+                    <p>
+                        After the reboot, we shut down the VM and disconnect the ISO from the machine. We can do this by
+                        right clicking the
+                        installer ISO in the storage settings of the VM and clicking on "Remove attachment". We should
+                        now be able to boot
+                        normally.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/pf/10.png" alt="..." />
+                    <p>
+                        We boot and type 8 to access to our shell.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/pf/booted.png" alt="..." />
+                    <p></p>
+                    <h2 id="installing-dc01">Installing DC01</h2>
+                    <p>This machine will act as the domain controller for the domain. </p>
+                    <h4 id="vm-setup-and-os-installation2">VM Setup and OS Installation</h4>
+                    <p>We start by downloading a trial version of Windows Server 2019 from Microsoft’s website. We then
+                        create the virtual
+                        machine and set the recommended hardware specifications. We set the RAM to 8GB, we add 2 virtual CPUs and give it 80GB of storage.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/1.png" alt="..." />
+                    <p></p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/2.png" alt="..." />
+                    <p></p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/3.png" alt="..." />
+                    <p>We click finish.</p>
+                    <p>Before booting the machine, we enter the expert tab in the machine settings and set the network
+                        adapter to “Internal
+                        Network”. This way, the machine will be part of the internal network.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/4.png" alt="..." />
+                    <p> We can now boot the DC01 virtual machine and begin installation. After clicking &quot;next&quot;
+                        on the basic
+                        install steps, the Windows installation begins. </p>
+                    <p>Note: At first, I selected “Windows Server 2019” instead of “Windows Server 2019 (Desktop
+                        Experience)” which led to
+                        Windows installing without a GUI. Be sure to select the option with “Desktop Experience” in
+                        parentheses if you want
+                        to be using a GUI on your domain controller. I ended up having to restart the installation.</p>
+                    <p>We set the administrator password and finish the installation.</p>
+                    <h4 id="network-settings-configuration1">Network Settings Configuration</h4>
+                    <p>Once we are logged in to the virtual computer, we check our IP to make sure that it is within the
+                        range we set in the
+                        DHCP configuration of pfSense.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/7.png" alt="..." />
+                    <p>
+                        Because this is a domain controller, we set its IP as static to prevent any domain connectivity
+                        issues. We also set
+                        its own IP as its DNS server. This is necessary because the domain controller will act as the
+                        DNS server for all
+                        domain joined machines.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/8.png" alt="..." />
+                    <p>
+                        Because our machine is currently querying itself for DNS resolution, we need to add the IP
+                        addresses of Cloudflare
+                        and Google’s DNS servers to the list of DNS forwarders. This will allow the DC to resolve
+                        external website
+                        addresses.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/13.png" alt="..." />
+                    <p>
+                        After applying the changes, we test our connection and see that we have access to the internet.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/6.png" alt="..." />
+                    <p>
+                    
+                    </p>
+                    <h4 id="domain-creation-and-dc-role-installation-">Domain Creation (and DC role installation)</h4>
+                    <p>We install Active Directory Domain Services and DNS Server roles from the server manager.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/10.png" alt="..." />
+                    <p>
+                        We then promote the server to a domain controller.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/11.png" alt="..." />
+                    <p>
+                        We select “Add a new forest” to create our home lab domain.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/12.png" alt="..." />
+                    <p>
+                        We click next a couple of times and click install. The virtual computer restarts once the
+                        installation is complete.
+                    </p>
+                    <p>We run “nslookup homelab.local” to make sure all is configured correctly. </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/155.png" alt="..." />
+                    <p></p>
+                    <h4 id="enabling-winrm">Enabling WinRM</h4>
+                    <p>We try to enable WinRM but find that it is already enabled. I learned afterwards that it is
+                        automatically enabled on all
+                        Windows Server 2019 installations.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/16.png" alt="..." />
+                    <p>
+                        We launch our Kali instance from within the internal network and see that we are able to connect
+                        with Evil-WinRM (A
+                        Linux tool that allows us to connect to Windows hosts).</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/17.png" alt="..." />
+                    <p>
+
+                    </p>
+                    <h4 id="creating-domain-users">Creating Domain Users</h4>
+                    <p>We will now create 6 standard users. We will not be modifying their default assigned rights as I
+                        want to have a clean
+                        slate for when I experiment on the domain later on.</p>
+                    <p>We create the standardUsers organisational unit and add the users.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/18.png" alt="..." />
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/19.png" alt="..." />
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/20.png" alt="..." />
+                    <p>
+
+                    </p>
+                    <h4 id="creating-gpos">Creating GPOs</h4>
+                    <p>I decided to create a GPO modifying the screen timeout setting as I kept having to unlock the
+                        virtual machine every
+                        couple of minutes.</p>
+                    <p>We open the Group Policy Management Console, create a GPO and link it to the domain.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/21.png" alt="..." />
+                    <p>
+                        We find the screen saver timeout setting and set it to 1800 seconds (30 min).</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/22.png" alt="..." />
+                    <p>
+                        We make sure to enforce it so it has priority over any other settings.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/23.png" alt="..." />
+                    <p></p>
+                    <p>We will now create a shared folder and map it as a network drive via GPO.</p>
+                    <p>We start by creating a folder on the root of the C drive and share it. We give read permissions
+                        to all domain users.
+                    </p>
+                    <p></p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/24.png" alt="..." />
+                    <p></p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/25.png" alt="..." />
+                    <p></p>
+                    <p>
+                        We create our GPO and link it to the standardUsers OU that we created. It contains our 6 AD
+                        users. At first, I had
+                        linked the GPO directly to the domain which did not work.
+                    </p>
+                    <p></p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/26.png" alt="..." />
+                    <p></p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/27.png" alt="..." />
+                    <p></p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/28.png" alt="..." />
+                    <p>
+                        We click targeting and select the standardUsers OU
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/29.png" alt="..." />
+                    <p>
+                        We will test this once we get to the PC01 setup.
+                    </p>
+                    <h4 id="mail-server-setup">Mail Server Setup</h4>
+                    <p>We will now configure a mail server on our DC so that we can simulate phishing email attacks.
+                        We start by downloading and installing hMailServer. This is very simple and straightforward.
+                        Note: The installation of .NET Framework 2.0 failed during the HMailServer install so I installed it from the
+                        server manager.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/30.png" alt="..." />    
+                    <p>
+                        Once the hMailServer installation is complete, we launch the program and create a new domain. We
+                        name it
+                        homelab.local, the same as our Active Directory domain.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/31.png" alt="..." />
+                    <p>
+                        We then add an email account (emercer@homelab.local) and set its password.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/32.png" alt="..." />
+                    <p>
+                        We then set the local network IP range with the correct settings. This will set the settings for
+                        all mail travelling
+                        within the local network.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/33.png" alt="..." />
+                    <p>
+                        We add a firewall rule in our DC machine to allow inbound connections to port 25, 110 and 143.
+                        We add another
+                        identical rule for outbound connections.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/34.png" alt="..." />
+                    <p>
+
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/DC/35.png" alt="..." />
+                    <p>
+
+                    </p>
+                    <h2 id="installing-pc03">Installing PC03</h2>
+                    <p>PC03 will serve for all Linux related tests. I wanted to have this machine be part of the network
+                        because there is
+                        usually one or more Linux machines present in real Active Directory environments. We will also
+                        use this host to
+                        access the pfSense web interface.</p>
+                    <h4 id="vm-setup-and-os-installation3">VM Setup and OS Installation</h4>
+                    <p>We download the Ubuntu LTS ISO and create a new virtual machine in Virtual Box with the recommended settings.
+                        We set the RAM to 4GB, add 2 virtual CPUs and 40GB of storage.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC3/1.png" alt="..." />
+                    <p>
+
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC3/2.png" alt="..." />
+                    <p>
+
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC3/3.png" alt="..." />
+                    <p>
+                        We also make sure that the machine is part of the internal network by setting its network
+                        adapter to &quot;Internal
+                        Network&quot;.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC3/4.png" alt="..." />
+                    <p>We can now start the virtual machine. After clicking next a couple of times, we setup the low
+                        level account and
+                        machine name.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC3/5.png" alt="..." />
+                    <p>
+                        We then click next a couple of times and begin the OS installation. Once the installation is
+                        completed, we restart
+                        the machine.</p>
+                    <p>After starting the machine, I could not log in although I typed the correct username and password.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC3/6.png" alt="..." />
+                    <p>
+                        After researching the problem, I deduced that the password did not register properly to the shadow file. I will boot into
+                        recovery and rewrite
+                        the password.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC3/7.png" alt="..." />
+                    <p>
+
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC3/8.png" alt="..." />
+                    <p>
+
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC3/9.1.png" alt="..." />
+                    <p>
+                        After booting into a root shell, we see that the user was never created.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC3/10.1.png" alt="..." />
+                    <p>
+                        We create our default user and set its password.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC3/11.1.png" alt="..." />
+                    <p>
+                        We then check to make sure the user has been added. We also add the user to the sudo group which
+                        will make it a
+                        privileged user on the machine.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC3/12.png" alt="..." />
+                    <p>
+                        We then log into the machine.</p>
+                    <h4 id="global-network-settings-configuration">Global Network Settings Configuration</h4>
+                    <p>We will now set the proper IP configuration for our internal network machines. </p>
+                    <p>We will configure pfSense so that it assigns the DC’s IP as the DNS server for all machines that
+                        receive an IP. This
+                        way, whenever a computer on the network needs to resolve a hostname to an IP, it will ask the
+                        DC01 machine instead
+                        of our pfSense router. This will allow any domain joined machine to resolve its domain name and
+                        interact with all AD
+                        services.</p>
+                    <p>We log in to the pfSense web interface and modify the DHCP settings for the network. We will set
+                        the DC IP
+                        (192.168.1.100) as the primary DNS server for all IPs assigned in the subnet.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC3/13.png" alt="..." />
+                    <p>Because PC03 will not be joined to the domain, we want it to use pfSense as its DNS server and
+                        not DC01. We
+                        achieve this by giving it a static mapping in the pfSense DHCP configuration and setting its DNS
+                        server to the
+                        pfSense IP address. 
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC3/14.png" alt="..." />
+                    <p>
+
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC3/15.png" alt="..." />
+                    <p>
+
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC3/16.png" alt="..." />
+                    <p>
+                        We apply the changes and restart the machine. Note: we had to give it an IP outside of our
+                        configured IP address
+                        pool (192.168.1.100-199).
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC3/17.png" alt="..." />
+                    <p>
+                        Here we see that the pfSense machine IP is set as the DNS server.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC3/18.png" alt="..." />
+                    <p></p>
+                    <h4 id="installing-ssh">Installing SSH</h4>
+                    <p>We will now install SSH on the machine and configure it to start on boot.</p>
+                    <p>
+                        We install the service.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC3/19.png" alt="..." />
+                    <p>
+                        We check the service status and see that it is not running so we start it.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC3/20.png" alt="..." />
+                    <p>
+                        We configure it to start on boot.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC3/21.png" alt="..." />
+                    <p>
+                        We test it from our Kali machine.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC3/22.png" alt="..." />
+                    <p></p>
+                    <h2 id="installing-pc01">Installing PC01</h2>
+                    <h4 id="vm-setup-and-os-installation4">VM Setup and OS Installation</h4>
+                    <p>
+                        We download the Windows 11 ISO and create a new virtual machine with the recommended settings.
+                        We set the RAM to 4GB, add 2 virtual CPUs and give it 80GB of storage.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC1/1.png" alt="..." />
+                    <p>
+
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC1/2.png" alt="..." />
+                    <p>
+
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC1/3.png" alt="..." />
+                    <p>
+                        We set the network adapter settings to &quot;IntNet&quot; to make sure the machine is in our
+                        private virtual
+                        network.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC1/4.png" alt="..." />
+                    <p>
+                        We then start the machine and install the OS.
+                    </p>
+                    <p>
+                        After starting the machine, I get an error message.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC1/5.png" alt="..." />
+                    <p>
+                        I first click cancel on the VirtualBox message. Then, I solved the problem by pressing any key
+                        and selecting the
+                        CD-ROM entry from the Boot Manager Menu. I assume the boot order was wrong and it did not
+                        automatically find the
+                        Windows installation ISO.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC1/6.png" alt="..." />
+                    <p>
+                        Once the installation is finished, we name the PC.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC1/7.png" alt="..." />
+                    <p>
+                        We select Set up for work or school, then sign-in options and domain join instead. This will
+                        allow us to finish the
+                        setup without connecting to a Microsoft account.
+                    </p>
+                    <h4 id="network-settings-configuration2">Network Settings Configuration</h4>
+                    <p>We log in to the machine and check our IP address. We see that we have the correct DNS entry.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC1/8.png" alt="..." />
+                    <p>We should be able to talk to the DC.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC1/9.png" alt="..." />
+                    <p>
+                        Perfect. 
+                    </p>
+                    <h4 id="joining-the-domain1">Joining the Domain</h4>
+                    <p>We will now join the PC to the domain.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC1/10.png" alt="..." />
+                    <p>
+                        We restart the computer to apply changes.
+                    </p>
+                    <p>
+                        This will be a good time to test the mapped drive GPO. We sign into the computer as Evan Mercer, open the
+                        file explorer and see that our mapped drive appears.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC1/11.png" alt="..." />
+                    <p>
+                        
+                    </p>
+                    <h4 id="user-mailbox-configuration">User Mailbox Configuration</h4>
+                    <p>We install Thunderbird on the PC and add a mail account. We set the hostname for the incoming and
+                        outgoing server
+                        settings to &quot;dc01.homelab.local&quot;.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC1/12.png" alt="..." />
+                    <p></p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC1/13.png" alt="..." />
+                    <p>
+                        After entering the password, the account is added.
+                    </p>
+                    <p>We test the email account by sending an email from our Kali Linux machine.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC1/14.png" alt="..." />
+                    <p>
+                        We check our inbox.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC1/15.png" alt="..." />
+                    <p>
+                        
+                    </p>
+                    <h4 id="winrm-configuration">WinRM configuration</h4>
+                    <p>We will now enable WinRM on the machine. We start an administrative command shell and type “winrm
+                        quickconfig”. This
+                        will walk us through all the steps to get WinRM up and running on the machine.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC1/16.png" alt="..." />
+                    <p>
+                        We test the connection from our Kali machine.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC1/17.png" alt="..." />
+                    <p>
+                        Everything seems to be in order. We can move on to PC02.
+                    </p>
+                    <h2 id="installing-pc02">Installing PC02</h2>
+                    <p>PC02 will be a Windows Server 2019 instance to allow us to host a webserver from it. This will be
+                        useful for either
+                        internal or external web attack simulations.</p>
+                    <h4 id="vm-setup-and-os-installation5">VM Setup and OS Installation</h4>
+                    <p>
+                        We will be reusing the trial version of Windows Server 2019 that we downloaded for machine DC01.
+                        We create a new virtual machine and set the recommended settings. We set the RAM to 8GB, the number of CPUs to 2 and give it 50GB of storage.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC2/1.png" alt="..." />
+                    <p></p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC2/2.png" alt="..." />
+                    <p></p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC2/3.png" alt="..." />
+                    <p>
+                        We attach it to the virtual private network.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC2/4.png" alt="..." />
+                    <p>
+                        We launch the machine and proceed with the OS installation.</p>
+                    <h4 id="network-settings-configuration3">Network Settings Configuration</h4>
+                    <p>As we did for PC01, we log in to the machine and check our IP configuration. The DNS server should
+                        be set to the DC IP
+                        as per our pfSense configuration.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC2/5.png" alt="..." />
+                    <p>
+                        Great. We check if we can resolve the domain name.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC2/6.png" alt="..." />
+                    <p>
+                        Perfect. We can move on to the next step.
+                    </p>
+                    <h4 id="joining-the-domain2">Joining the Domain</h4>
+                    <p>We will now join the PC02 to the domain.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC2/7.png" alt="..." />
+                    <p>We restart the computer to apply changes.</p>
+                    <h4 id="webserver-installation">Webserver Installation</h4>
+                    <p>We install the IIS webserver role and its services. This will install the necessary software and
+                        services on PC02 for
+                        it to host and serve web pages. We can then install any webserver we want for testing purposes.
+                    </p>
+                    <p>We enter the server manager and select &quot;add roles and features&quot;.</p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC2/8.png" alt="..." />
+                    <p></p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/PC2/9.png" alt="..." />
+                    <p>
+                        We restart the machine once the installation is finished.</p>
+                    <h2 id="conclusion">Conclusion</h2>
+                    <p>We now have the base configuration of our home lab for all our future tests. I made sure to take
+                        snapshots in
+                        VirtualBox of all the machines in their current state so that I can revert them after different
+                        tests. All in all,
+                        this was a good learning experience in the installation and configuration of a very basic active
+                        directory network.
+                        I was already familiar with all the concepts and notions seen during the installation, but it
+                        is always useful to
+                        touch on the implementation side of things.</p>
+
+                    </p>
+                </div>
+            </div>
+        </div>
+    </article>
+    <!-- Bootstrap core JS-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Core theme JS-->
+    <script src="js/scripts.js"></script>
+</body>
+
+</html>

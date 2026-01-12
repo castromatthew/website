@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Matthew Castro - Blog</title>
+    <link rel="icon" type="image/x-icon" href="../assets/favicon.ico" />
+    <!-- Font Awesome icons (free version)-->
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <!-- Google fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet"
+        type="text/css" />
+    <link
+        href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800"
+        rel="stylesheet" type="text/css" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="../css/styles.css" rel="stylesheet" />
+    <link rel="preload" as="image" href="/assets/img/backgroud.jpg">
+    <link rel="preload" as="image" href="/assets/img/posts.jpg">
+</head>
+
+<body>
+    <!-- Navigation-->
+    <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
+        <div class="container px-4 px-lg-5">
+            <a class="navbar-brand" href="../index.html">Matthew Castro</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                Menu
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ms-auto py-4 py-lg-0">
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../index.html">Homelab</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../reports.html">Reports</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../Write-ups.html">Write-ups</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../about.html">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Page Header-->
+    <header class="masthead" style="background-image: url('../assets/img/posts.jpg')">
+        <div class="container position-relative px-4 px-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+                <div class="col-md-10 col-lg-8 col-xl-7">
+                    <div class="post-heading">
+                        <h1>Configuring a Vulnerable Website on PC02</h1>
+                        <h2 class="subheading">All of the steps taken in configuring a vulnerable, externally-facing
+                            website on
+                            machine PC02 of our homelab.</h2>
+                        <span class="meta">
+                            Posted on January 1st, 2026
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Post Content-->
+    <article class="mb-4">
+        <div class="container px-4 px-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+                <div class="col-md-10 col-lg-8 col-xl-7">
+                    <ul>
+                        <h2 id="table-of-contents">Table of Contents</h2>
+                    <ul>
+                        <li><a href="#objective">Objective</a></li>
+                        <li><a href="#installing-and-configuring-the-sql-database">Installing and Configuring the SQL
+                                Database</a></li>
+                        <li><a href="#creating-and-configuring-our-web-app">Creating and Configuring Our Web App</a></li>
+                        <li><a href="#port-forwarding-the-website-to-the-nat-network">Port Forwarding the Website to the
+                                NAT Network</a>
+                        </li>
+                    </ul>
+                    <p></p>
+                    <h4 id="objective">Objective</h4>
+                    <p>The goal of this document is to detail the configuration of a vulnerable IIS web server.
+                        The website will be vulnerable to SQL injection which will lead to remote command execution.
+                        This configuration will be used in the simulated exploitation of attack chain #2.
+                    </p>
+                    <p></p>
+                    <h4 id="installing-and-configuring-the-sql-database">Installing and Configuring the SQL
+                                Database</h4>
+                    <p>
+                        We download SQL Server Express 2019 from the Microsoft website and launch the installer. We
+                        choose <strong>Basic</strong> as the installation type. Every other setting of the
+                        installation is left untouched.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/1.png" alt="..." />
+                    <p>
+                        Once the installation is completed, we download SQL Server Management Studio from the Microsoft
+                        website and launch the installer.
+                    </p>
+                    <p>
+                        We install the SSMS Core Components.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/2.png" alt="..." />
+                    <p>
+                        We restart the machine once the installation is complete.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/3.png" alt="..." />
+                    <p>
+                        We launch SQL Server Configuration Manager and enable TCP/IP.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/4.png" alt="..." />
+                    <p>
+                        We right-click &quot;TCP/IP&quot;, select &quot;Properties&quot;, and set the TCP Port in IPALL
+                        to 1433.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/5.png" alt="..." />
+                    <p>We then open SSMS and connect to localhost\SQLEXPRESS. We select &quot;Trust Server
+                        Certificate&quot; to ensure a successful connection. 
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/6.png" alt="..." />
+                    <p>
+                        We then create a new database that will be used in our tests.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/7.png" alt="..." />
+                    <p>
+                        We name it &quot;vulnDB&quot; and click OK.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/8.png" alt="..." />
+                    <p>
+                        We also add a new user to the database. This user&#39;s permissions can be modified in the future
+                        depending on our needs. For now, we will be assigning the sysadmin role.
+                    </p>
+                    <p>
+                        In the object explorer, we right-click on &quot;Logins&quot; and click &quot;New Login&quot;.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/9.png" alt="..." />
+                    <p
+                    >We name the user &quot;user1&quot; and uncheck &quot;enforce password policy&quot;.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/10.png" alt="..." />
+                    <p>
+                        We now allow our user to log in to the database by adding him to the vulnDB database users.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/11.png" alt="..." />
+                    <p></p>
+                    <img class="img-fluid" src="../assets/img/web_setup/12.png" alt="..." />
+                    <p>
+                        We assign the sysadmin role to the user with a new query:
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/13.png" alt="..." />
+                    <p>
+                        We create a table in our database.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/14.png" alt="..." />
+                    <p>
+                        Finally, we enable xp_cmdshell globally. This will allow us to execute OS commands 
+                         once SQLi is achieved.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/15.png" alt="..." />
+                    <p></p>
+                    <h4 id="creating-and-configuring-our-web-app">Creating and Configuring Our Web App</h4>
+                    <p>
+                        We open IIS Manager and add a new application to our default website.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/16.png" alt="..." />
+                    <p>
+                        We set the alias to &quot;login&quot; and the physical path to
+                        &quot;C:\inetpub\wwwroot\login&quot;.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/17.png" alt="..." />
+                    <p>
+                        We open Server Manager and select the &quot;Application Development&quot; component of the
+                        Web Server IIS role. We then select both .NET Extensibility options, ASP.NET 4.7, ISAPI
+                        Extensions and
+                        ISAPI filters. We click <strong>Next</strong>, <strong>Next</strong>, then
+                        <strong>Install</strong>.
+                        </p>
+                        <img class="img-fluid" src="../assets/img/web_setup/18.png" alt="..." />
+                        <p>
+                        We restart the machine.
+                    </p>
+                    <p>We create &quot;web.config&quot; in &quot;C:\inetpub\wwwroot\login&quot; and add the following
+                        code:
+                    </p>
+                   <img class="img-fluid" src="../assets/img/web_setup/19.png" alt="..." />
+                    <p>   
+                        This will be our connection file for the SQL database.
+                    </p>
+                    <p>We then create login.aspx in the same directory and add the following code:
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/20.png" alt="..." />
+                    <p>
+                        Finally, we create login.aspx.cs in the same directory with this code:
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/21.png" alt="..." />
+                    <p>The vulnerable query is "SELECT * FROM Users WHERE Username = '" + u + "' AND Password = '" + p + "'";
+ </p>
+                    <p>
+                        We can now visit the website at http://localhost/login/login.aspx to test
+                        it.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/22.png" alt="..." />
+                    <p>    
+                        We see that it loads correctly.
+                    </p>
+                    <p>
+                        When we try to log in, we see that the connection to the database is failing.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/23.png" alt="..." />
+                    <p>
+                        We fix this by enabling &quot;SQL Server and Windows Authentication mode&quot; in the security
+                        tab of the server properties and restarting the SQL Server.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/24.png" alt="..." />
+                    <p>
+                        We now test a successful and failed login on our web page.
+                    </p>
+                    <p>
+                        We get a successful login with &quot;root&quot; as the username and &quot;toor&quot; as the
+                        password:
+                     </p>
+                     <img class="img-fluid" src="../assets/img/web_setup/25.png" alt="..." />
+                    <p>
+                        We get a failed login with &quot;root&quot; as the username and &quot;test&quot; as the
+                        password:
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/26.png" alt="..." />
+                    <p>
+                        Now that we know the web app is validating our requests, we test a simple SQL injection to see if
+                        we get a successful login response.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/27.png" alt="..." />
+                    <p>
+                        It works. We will now test whether we can execute commands with xp_cmdshell. The payload used for the
+                        test is the following:
+                        &#39;; exec xp_cmdshell &#39;mkdir C:\test6&#39;;--
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/28.png" alt="..." />
+                    <p>
+                        We see that the folder is created. We now have the web server configured and vulnerable to SQLi.
+                    </p>
+                    <h2 id="port-forwarding-the-website-to-the-nat-network">Port Forwarding the Website to the NAT
+                        Network</h2>
+                    <p>We create a NAT network by heading to the Network section of the VirtualBox Manager and click
+                        &quot;Create&quot;.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/29.png" alt="..." />
+                    <p>
+                        We make sure that the network interfaces of both the Kali machine and the pfSense machine are set to
+                        NatNetwork.
+                    </p>
+                    <p>
+                        We will now port forward the website to the WAN. The goal of doing so is to simulate an
+                        externally-facing web page that we can access from our Kali attack machine.
+                        We log into the pfSense interface and head to the firewall settings to add an entry.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/30.png" alt="..." />
+                    <p></p>
+                    <img class="img-fluid" src="../assets/img/web_setup/31.png" alt="..." />
+                    <p>
+                        After saving this rule, I could not access the website from my Kali machine. It seems that the
+                        firewall rule created automatically in conjunction with the port-forwarding rule was not
+                        accepting the connection. I went back to the port-forwarding settings and set &quot;Filter rule
+                        association&quot; to &quot;Pass&quot;. This fixed my issue and we could access the internal
+                        website from Kali.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/32.png" alt="..." />
+                    <p>
+                        We test connecting to the website on PC02 from our Kali machine and see that it works.
+                    </p>
+                    <img class="img-fluid" src="../assets/img/web_setup/33.png" alt="..." />
+                    <p></p>
+                    <img class="img-fluid" src="../assets/img/web_setup/34.png" alt="..." />
+                    <p>We successfully configured a vulnerable external web page hosted on our internal network.</p>
+
+
+                </div>
+            </div>
+        </div>
+    </article>
+    <!-- Bootstrap core JS-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Core theme JS-->
+    <script src="js/scripts.js"></script>
+</body>
+
+</html>
