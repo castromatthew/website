@@ -163,13 +163,13 @@
                     <p>We start by downloading the pfSense ISO from the official website and creating a new virtual
                         machine in VirtualBox.
                         We select the ISO from our local disk and set the OS to FreeBSD.</p>
-                    <img class="img-fluid" src="../assets/img/hl_setup/pf/1.png" alt="..." />
+                    <img class="img-fluid" src="../assets/img/hl_setup/Pf/1.png" alt="..." />
                     <p>
                         We can then specify the virtual hardware to the recommended hardware requirements. We set the
                         base memory to 2GB,
                         the number of CPUs to 2 and 20GB for the disk size. This can always be adjusted at a later date.
                     </p>
-                    <img class="img-fluid" src="../assets/img/hl_setup/pf/2.png" alt="..." />
+                    <img class="img-fluid" src="../assets/img/hl_setup/Pf/2.png" alt="..." />
                     <p>We then head to our VM’s settings, select expert and head to the network tab. We configure two
                         virtual network
                         adapters: &quot;NAT&quot; which will allow the machine to route packets to the internet and
@@ -179,37 +179,37 @@
                         as their only network adapter. This way, all traffic must pass through pfSense before reaching
                         the internet. This
                         will also be useful when it comes to simulating external breaches.</p>
-                    <img class="img-fluid" src="../assets/img/hl_setup/pf/3.png" alt="..." />
+                    <img class="img-fluid" src="../assets/img/hl_setup/Pf/3.png" alt="..." />
                     <p></p>
                     <img class="img-fluid" src="../assets/img/hl_setup/pf/4.png" alt="..." />
                     <p>We can now boot the machine to begin the setup. </p>
                     <p>When asked to configure the network, we select em0 as the WAN interface. This is the interface
                         that will connect to
                         the internet.</p>
-                    <img class="img-fluid" src="../assets/img/hl_setup/pf/5.png" alt="..." />
+                    <img class="img-fluid" src="../assets/img/hl_setup/Pf/5.png" alt="..." />
                     <p>
                         We can leave the WAN network mode with its default settings.</p>
-                    <img class="img-fluid" src="../assets/img/hl_setup/pf/6.png" alt="..." />
+                    <img class="img-fluid" src="../assets/img/hl_setup/Pf/6.png" alt="..." />
                     <p>
                         We can then select em1 as our LAN interface. This will be the internal network interface.</p>
-                    <img class="img-fluid" src="../assets/img/hl_setup/pf/7.png" alt="..." />
+                    <img class="img-fluid" src="../assets/img/hl_setup/Pf/7.png" alt="..." />
                     <p>
                         We can also leave the LAN network mode settings at their default values. </p>
-                    <img class="img-fluid" src="../assets/img/hl_setup/pf/8.png" alt="..." />
+                    <img class="img-fluid" src="../assets/img/hl_setup/Pf/8.png" alt="..." />
                     <p>
                         After confirming some basic settings, the installation begins.</p>
                     <p>Once the installation is finished, we are asked to reboot. </p>
-                    <img class="img-fluid" src="../assets/img/hl_setup/pf/9.png" alt="..." />
+                    <img class="img-fluid" src="../assets/img/hl_setup/Pf/9.png" alt="..." />
                     <p>
                         After the reboot, we shut down the VM and disconnect the ISO from the machine. We can do this by
                         right clicking the
                         installer ISO in the storage settings of the VM and clicking on "Remove attachment". We should
                         now be able to boot
                         normally.</p>
-                    <img class="img-fluid" src="../assets/img/hl_setup/pf/10.png" alt="..." />
+                    <img class="img-fluid" src="../assets/img/hl_setup/Pf/10.png" alt="..." />
                     <p>
                         We boot and type 8 to access to our shell.</p>
-                    <img class="img-fluid" src="../assets/img/hl_setup/pf/booted.png" alt="..." />
+                    <img class="img-fluid" src="../assets/img/hl_setup/Pf/booted.png" alt="..." />
                     <p></p>
                     <h2 id="installing-dc01">Installing DC01</h2>
                     <p>This machine will act as the domain controller for the domain. </p>
@@ -673,5 +673,6 @@
     <!-- Core theme JS-->
     <script src="js/scripts.js"></script>
 </body>
+
 
 </html>
