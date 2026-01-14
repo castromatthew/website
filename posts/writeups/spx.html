@@ -50,7 +50,7 @@
                     <div class="post-heading">
                         <h2>SPX - Proving Grounds Write-up</h2>
                         <span class="meta">
-                            Posted on January 13st, 2026
+                            Posted on January 13th, 2026
                         </span>
                     </div>
                 </div>
@@ -65,7 +65,7 @@
                     <p>We start by enumerating the directories of the website on port 80. 
                         The base directory seems to be hosting an instance of H3K Tiny File Manager. 
                          We find the phpinfo.php file exposed, located in the webroot. We gain some
-                         more info on the system using the exposed file and find that the SPX php
+                         more info on the system using the exposed file and find that the SPX PHP
                           extension version is vulnerable to directory traversal. 
                         <p></p>
                         <span class="grey-line">feroxbuster --url http://192.168.229.108/ --wordlist /usr/share/wordlists/dirb/common.txt</span>
@@ -83,7 +83,7 @@
                         <p></p>
                     </p>
                     <p>
-                        Due to having already worked with H3K TinyFileManager in a previous lab, I know that all the code is contained on one large PHP file.
+                        Due to having already worked with H3K Tiny File Manager in a previous lab, I know that all the code is contained on one large PHP file.
                          We read it with curl to obtain the admin hash (I could not read it with the POC script). To read files on the website with curl,
                           we use the SPX key value from the phpinfo.php file and use the same payload as in the POC. We need to add 18 URL-encoded 
                           "../" characters before adding the path of the file we want to read.
@@ -98,7 +98,7 @@
                         <p></p>
 
                     
-                        We crack the hash, login to Tiny File Manager as admin, upload a php reverse shell and visit the file URL with our browser to obtain a reverse shell.
+                        We crack the hash, login to Tiny File Manager as admin, upload a PHP reverse shell and visit the file URL with our browser to obtain a reverse shell.
                         <p></p>
                         <span class="grey-line">rlwrap nc -lvnp 80</span>
                         <p></p>
@@ -114,14 +114,14 @@
                         <p></p>
                         <span class="grey-line">(ALL) /usr/bin/make install -C /home/profiler/php-spx</span>
                         <p></p>
-                        We have full control over the makefile in the php-spx directory, meaning we can replace it with our own. We create a makefile with an "install" 
+                        We have full control over the Makefile in the php-spx directory, meaning we can replace it with our own. We create a Makefile with an "install" 
                         function that adds a second root user. 
                         <p></p>
                         <span class="grey-line">sudo -l</span>
                         <p></p>
                         <img class="img-fluid" src="../../assets/img/writeups/SPX/6.png" alt="..." />
                         <p></p>
-                        <span class="grey-line">cat MakeFile</span>
+                        <span class="grey-line">cat Makefile</span>
                         <p></p>
                         <img class="img-fluid" src="../../assets/img/writeups/SPX/7.png" alt="..." />
                         <p></p>
@@ -149,3 +149,4 @@
 </body>
 
 </html>
+
