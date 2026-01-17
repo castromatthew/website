@@ -94,7 +94,7 @@
                     <p></p>
                     We leverage 7zip wildcards as described here: <a href="https://chinnidiwakar.gitbook.io/githubimport/linux-unix/privilege-escalation/wildcards-spare-tricks" target="_blank"><u>https://chinnidiwakar.gitbook.io/githubimport/linux-unix/privilege-escalation/wildcards-spare-tricks</u></a> and obtain the root
                     password of the machine. This is done by creating a custom file in the directory being zipped. This file forces the script to read the secret file and print its contents
-                    into backup.log. We switch to the root user using su and obtain a root shell.
+                    into the backup.log file. We switch to the root user using su and obtain a root shell.
                     <p></p>
                     <span class="grey-line">touch @secret.zip</span>
                     <p></p>
@@ -124,3 +124,4 @@
 
 
 </html>
+
