@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Matthew Castro - Blog</title>
+    <link rel="icon" type="image/x-icon" href="../../assets/favicon.ico" />
+    <!-- Font Awesome icons (free version)-->
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <!-- Google fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet"
+        type="text/css" />
+    <link
+        href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800"
+        rel="stylesheet" type="text/css" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="../../css/styles.css" rel="stylesheet" />
+    <link rel="preload" as="image" href="/assets/img/backgroud.jpg">
+    <link rel="preload" as="image" href="/assets/img/posts.jpg">
+</head>
+
+<body>
+    <!-- Navigation-->
+    <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
+        <div class="container px-4 px-lg-5">
+            <a class="navbar-brand" href="../../index.html">Matthew Castro</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                Menu
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ms-auto py-4 py-lg-0">
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../index.html">Homelab</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../reports.html">Reports</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../Write-ups.html">Write-ups</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../about.html">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Page Header-->
+    <header class="masthead" style="background-image: url('../../assets/img/posts.jpg')">
+        <div class="container position-relative px-4 px-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+                <div class="col-md-10 col-lg-8 col-xl-7">
+                    <div class="post-heading">
+                        <h2>Zipper - Proving Grounds Write-up</h2>
+                        <span class="meta">
+                            Posted on January 17th, 2026
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Post Content-->
+    <article class="mb-4">
+        <div class="container px-4 px-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+                <div class="col-md-10 col-lg-8 col-xl-7">
+                    <p>We start by visiting the website at port 80. If we upload a file with the upload functionality, we get a hyper link that points to the zip file on the server (uploads/filename).
+                    We can use the zip:// PHP wrapper to access whatever file we uploaded. We upload a PHP-reverse-shell and visit it using this method. This allows us to obtain a reverse shell.
+                    It is important to not add the PHP extension in the name of the file we upload as it is automatically appended.
+                    </p>
+                    <p></p>
+                    Location of the ZIP archive we uploaded (containing our reverse shell): 
+                    <p></p>
+                    <img class="img-fluid" src="../../assets/img/writeups/zipper/1.png" alt="..." />
+                    <p></p>
+                        We access the file with curl (p being the php filename):
+                    <p></p>
+                    <span class="grey-line">curl 'http://192.168.160.229/index.php?file=zip://uploads/upload_1756862563.zip%23p' </span>
+                    <p></p>
+                    <img class="img-fluid" src="../../assets/img/writeups/zipper/2.png" alt="..." />
+                    <p></p>
+                    We see that a reverse shell connection was obtained on our listener:
+                    <p></p>
+                    <img class="img-fluid" src="../../assets/img/writeups/zipper/3.png" alt="..." />
+                    <p></p>
+                    We then locate a bash script that is running every minute on the machine. If we examine its contents, it is zipping all files that end in the .ZIP extension into the
+                    /var/www/html/uploads directory. The script is reading root credentials from /root/secret. Finally, it prints out the result of the command into /opt/backups/backup.log.
+                    <p></p>
+                    We leverage 7zip wildcards as described here: <a href="https://chinnidiwakar.gitbook.io/githubimport/linux-unix/privilege-escalation/wildcards-spare-tricks" target="_blank"><u>https://chinnidiwakar.gitbook.io/githubimport/linux-unix/privilege-escalation/wildcards-spare-tricks</u></a> and obtain the root
+                    password of the machine. This is done by creating a custom file in the directory being zipped. This file forces the script to read the secret file and print its contents
+                    into backup.log. We switch to the root user using su and obtain a root shell.
+                    <p></p>
+                    <span class="grey-line">cat etc/crontab</span>
+                    <p></p>
+                    <img class="img-fluid" src="../../assets/img/writeups/zipper/4.png" alt="..." />
+                    <p></p>
+                    <span class="grey-line">cat /opt/backup.sh</span>
+                    <p></p>
+                    <img class="img-fluid" src="../../assets/img/writeups/zipper/5.png" alt="..." />
+                    <p></p>
+                    <span class="grey-line">touch @secret.zip</span>
+                    <p></p>
+                    <span class="grey-line">ln -s /root/secret secret.zip</span>
+                    <p></p>
+                    <img class="img-fluid" src="../../assets/img/writeups/zipper/6.png" alt="..." />
+                    <p></p>
+                    <span class="grey-line">cat backup.log</span>
+                    <p></p>
+                    <img class="img-fluid" src="../../assets/img/writeups/zipper/7.png" alt="..." />
+                    <p></p>
+                    <span class="grey-line">su root</span>
+                    <p></p>
+                    <img class="img-fluid" src="../../assets/img/writeups/zipper/8.png" alt="..." />
+                    <p></p>
+                    It is worth noting that the root password can be found by watching for process execution with pspy, altough I do not believe that was the intended route for the lab.
+
+                </div>
+            </div>
+        </div>
+    </article>
+    <!-- Bootstrap core JS-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Core theme JS-->
+    <script src="js/scripts.js"></script>
+</body>
+
+</html>
