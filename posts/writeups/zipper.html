@@ -84,10 +84,6 @@
                     We then locate a bash script that is running every minute on the machine. If we examine its contents, it is zipping all files that end in the .ZIP extension into the
                     /var/www/html/uploads directory. The script is reading root credentials from /root/secret. Finally, it prints out the result of the command into /opt/backups/backup.log.
                     <p></p>
-                    We leverage 7zip wildcards as described here: <a href="https://chinnidiwakar.gitbook.io/githubimport/linux-unix/privilege-escalation/wildcards-spare-tricks" target="_blank"><u>https://chinnidiwakar.gitbook.io/githubimport/linux-unix/privilege-escalation/wildcards-spare-tricks</u></a> and obtain the root
-                    password of the machine. This is done by creating a custom file in the directory being zipped. This file forces the script to read the secret file and print its contents
-                    into backup.log. We switch to the root user using su and obtain a root shell.
-                    <p></p>
                     <span class="grey-line">cat etc/crontab</span>
                     <p></p>
                     <img class="img-fluid" src="../../assets/img/writeups/zipper/4.png" alt="..." />
@@ -95,6 +91,10 @@
                     <span class="grey-line">cat /opt/backup.sh</span>
                     <p></p>
                     <img class="img-fluid" src="../../assets/img/writeups/zipper/5.png" alt="..." />
+                    <p></p>
+                    We leverage 7zip wildcards as described here: <a href="https://chinnidiwakar.gitbook.io/githubimport/linux-unix/privilege-escalation/wildcards-spare-tricks" target="_blank"><u>https://chinnidiwakar.gitbook.io/githubimport/linux-unix/privilege-escalation/wildcards-spare-tricks</u></a> and obtain the root
+                    password of the machine. This is done by creating a custom file in the directory being zipped. This file forces the script to read the secret file and print its contents
+                    into backup.log. We switch to the root user using su and obtain a root shell.
                     <p></p>
                     <span class="grey-line">touch @secret.zip</span>
                     <p></p>
@@ -121,5 +121,6 @@
     <!-- Core theme JS-->
     <script src="js/scripts.js"></script>
 </body>
+
 
 </html>
